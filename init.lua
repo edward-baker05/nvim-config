@@ -673,7 +673,7 @@ cmp.setup {
 }
 
 -- Set tab size to be equal to 4 spaces as standard 
-vim.cmd("set tabpstop=4")
+vim.cmd("set tabstop=4")
 vim.cmd("set shiftwidth=4")
 vim.cmd("set expandtab")
 
