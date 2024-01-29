@@ -73,8 +73,6 @@ require('lazy').setup({
   'tpope/vim-fugitive',
   'tpope/vim-rhubarb',
 
-  -- Detect tabstop and shiftwidth automatically
-  'tpope/vim-sleuth',
 
   -- NOTE: This is where your plugins related to LSP can be installed.
   --  The configuration is done below. Search for lspconfig to find it below.
@@ -331,6 +329,7 @@ vim.o.completeopt = 'menuone,noselect'
 -- NOTE: You should make sure your terminal supports this
 vim.o.termguicolors = true
 vim.cmd("hi normal guibg = NONE")
+
 -- [[ Basic Keymaps ]]
 
 -- Keymaps for better default experience
@@ -672,6 +671,11 @@ cmp.setup {
     { name = 'path' },
   },
 }
+
+-- Set tab size to be equal to 4 spaces as standard 
+vim.cmd("set tabpstop=4")
+vim.cmd("set shiftwidth=4")
+vim.cmd("set expandtab")
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
