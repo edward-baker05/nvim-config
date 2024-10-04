@@ -50,6 +50,10 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
+-- Set tab sizes
+vim.opt.shiftwidth = 4
+vim.opt.tabstop = 4
+
 -- Disable line wrapping
 vim.o.wrap = true
 vim.o.linebreak = true
@@ -451,15 +455,6 @@ vim.api.nvim_create_autocmd({ 'VimEnter', 'BufEnter', 'FileType' }, {
   pattern = { 'tex', 'md' }, 
   callback = function()
     vim.cmd "TSBufDisable highlight"
-  end,
-})
-
-vim.api.nvim_create_autocmd({ 'VimEnter', 'BufEnter', 'FileType' }, {
-  desc = 'Disable TreeSitter highlighting for specific filetypes',
-  group = vim.api.nvim_create_augroup('treesitter-highlight-disable', { clear = true }),
-  pattern = { 'tex' }, 
-  callback = function()
-    vim.cmd "VimtexCompile"
   end,
 })
 
