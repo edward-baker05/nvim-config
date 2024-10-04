@@ -100,6 +100,7 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -236,13 +237,16 @@ require('lazy').setup {
     end,
   },
 
-  { -- LSP Configuration & Plugins
+  {
+  },
+
+  {
     'neovim/nvim-lspconfig',
     dependencies = {
       -- Automatically install LSPs and related tools to stdpath for neovim
-      'williamboman/mason.nvim',
+      "williamboman/mason.nvim",
       'williamboman/mason-lspconfig.nvim',
-      'WhoIsSethDaniel/mason-tool-installer.nvim',
+      -- 'WhoIsSethDaniel/mason-tool-installer.nvim',
 
       -- Useful status updates for LSP.
       { 'j-hui/fidget.nvim', opts = {} },
@@ -300,17 +304,12 @@ require('lazy').setup {
           end
         end,
       })
-
+      
       -- LSP servers and clients are able to communicate to each other what features they support.
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
-
+       
       local servers = {
-        ocamllsp = {
-          get_language_id = function(_, ftype)
-            return ftype
-          end,
-        },
         gopls = {},
         pyright = {},
         rust_analyzer = {},
@@ -331,23 +330,29 @@ require('lazy').setup {
               completion = {
                 callSnippet = 'Replace',
               },
-              -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-              -- diagnostics = { disable = { 'missing-fields' } },
             },
           },
         },
       }
 
-      -- Ensure the servers and tools above are installed
-      require('mason').setup()
-
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format lua code
       })
-      require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
-      require('mason-lspconfig').setup {
+      require("mason").setup({
+        ui = {
+          icons = {
+            package_installed = "✓",
+            package_pending = "➜",
+            package_uninstalled = "✗"
+          }
+        }
+      })
+
+      -- require('mason-tool-installer').setup({ ensure_installed = ensure_installed })
+
+      require('mason-lspconfig').setup({
         handlers = {
           function(server_name)
             local server = servers[server_name] or {}
@@ -355,36 +360,34 @@ require('lazy').setup {
             require('lspconfig')[server_name].setup(server)
           end,
         },
-      }
+      })
     end,
-  },
-
-  { -- Autoformat
-    'stevearc/conform.nvim',
-    opts = {
-      notify_on_error = false,
-      format_on_save = {
-        timeout_ms = 500,
-        lsp_fallback = true,
-      },
-      formatters_by_ft = {
-        lua = { 'stylua' },
-        python = { "isort", "black" },
-        javascript = { { "prettierd", "prettier" } },
-      },
-    },
   },
 
   {
     "lervag/vimtex",
     lazy = false,
     init = function()
-      vim.g.vimtext_view_method = "zathura"
+      vim.g.vimtext_view_method = "sioyek"
       vim.g.tex_flavor = "latex"
       vim.g.quickfix_mode = 0
       vim.g.tex_conceal = "abdmg"
-      vim.o.conceallevel = 1
+      vim.g.conceallevel = 1
     end
+  },
+
+  {
+    'SirVer/ultisnips',
+    init = function()
+      vim.g.UltiSnipsSnippetDirectories = {"~/.config/nvim/UltiSnips"}
+      vim.g.UltiSnipsExpandTrigger = '<tab>'
+      vim.g.UltiSnipsJumpForwardTrigger = '<tab>'
+      vim.g.UltiSnipsJumpBackwardTrigger = '<s-tab>'
+    end,
+  },
+
+  {
+    'honza/vim-snippets'
   },
 
   {
@@ -429,7 +432,10 @@ require('lazy').setup {
         ensure_installed = { 'bash', 'c', 'html', 'lua', 'markdown', 'vim', 'vimdoc' },
         -- Autoinstall languages that are not installed
         auto_install = true,
-        highlight = { enable = true },
+        highlight = {
+          enable = true,
+          disable = { "tex" }
+        },
         indent = { enable = true },
       }
 
@@ -438,6 +444,24 @@ require('lazy').setup {
 
   { import = 'custom.plugins' },
 }
+
+vim.api.nvim_create_autocmd({ 'VimEnter', 'BufEnter', 'FileType' }, {
+  desc = 'Disable TreeSitter highlighting for specific filetypes',
+  group = vim.api.nvim_create_augroup('treesitter-highlight-disable', { clear = true }),
+  pattern = { 'tex', 'md' }, 
+  callback = function()
+    vim.cmd "TSBufDisable highlight"
+  end,
+})
+
+vim.api.nvim_create_autocmd({ 'VimEnter', 'BufEnter', 'FileType' }, {
+  desc = 'Disable TreeSitter highlighting for specific filetypes',
+  group = vim.api.nvim_create_augroup('treesitter-highlight-disable', { clear = true }),
+  pattern = { 'tex' }, 
+  callback = function()
+    vim.cmd "VimtexCompile"
+  end,
+})
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
