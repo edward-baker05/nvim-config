@@ -1,23 +1,37 @@
 snippet bp "Boilerplate" bA
 \documentclass[12pt, letterpaper]{article}
-\usepackage{graphicx}
 
 \title{$1 \\[1ex] \large $2}
 \author{Edward Baker}
-\date{`date + %F`}
+\date{`date +%F`}
 
 \begin{document}
 \maketitle
-$0
+	$0
 \end{document}
 endsnippet
 
 snippet beg "begin{} / end{}" bA
 \begin{$1}
-$0
+	$0
 \end{$1}
 endsnippet
 
 snippet today "Date"
-`date +%F`
+`date +%d-%m-%Y`
+endsnippet
+
+snippet mk "Math" wA
+$${1}$`!p
+if t[2] and t[2][0] not in [',', '.', '?', '-', ' ']:
+    snip.rv = ' '
+else:
+    snip.rv = ''
+`$2
+endsnippet
+
+snippet dm "Math" wA
+\[
+$1
+.\] $0
 endsnippet

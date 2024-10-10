@@ -376,7 +376,7 @@ require('lazy').setup {
       vim.g.tex_flavor = "latex"
       vim.g.quickfix_mode = 0
       vim.g.tex_conceal = "abdmg"
-      vim.g.conceallevel = 1
+      vim.opt.conceallevel = 1
     end
   },
 
