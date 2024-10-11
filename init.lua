@@ -54,6 +54,12 @@ vim.opt.scrolloff = 10
 vim.opt.shiftwidth = 4
 vim.opt.tabstop = 4
 
+-- Set spellcheck settings
+vim.opt.spell = true
+vim.opt.spelllang = { "en_gb" }
+
+-- Define the key mapping
+
 -- Disable line wrapping
 vim.o.wrap = true
 vim.o.linebreak = true
@@ -61,6 +67,8 @@ vim.o.list = false
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
+--  Spellcheck
+vim.api.nvim_set_keymap('i', '<C-l>', '<c-g>u<Esc>[s1z=`]a<c-g>u', { noremap = true, silent = true })
 
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
@@ -372,7 +380,7 @@ require('lazy').setup {
     "lervag/vimtex",
     lazy = false,
     init = function()
-      vim.g.vimtext_view_method = "sioyek"
+      vim.g.vimtex_view_method = "sioyek"
       vim.g.tex_flavor = "latex"
       vim.g.quickfix_mode = 0
       vim.g.tex_conceal = "abdmg"
@@ -457,6 +465,7 @@ vim.api.nvim_create_autocmd({ 'VimEnter', 'BufEnter', 'FileType' }, {
     vim.cmd "TSBufDisable highlight"
   end,
 })
+
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
