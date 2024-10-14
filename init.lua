@@ -403,18 +403,6 @@ require('lazy').setup {
   },
 
   {
-    "rose-pine/neovim", 
-    name = "rose-pine", 
-    lazy = false,
-    priority = 1000,
-    config = function()
-      vim.cmd.colorscheme 'rose-pine-moon'
-
-      vim.cmd.hi 'Comment gui=none'
-    end,
-  },
-
-  {
     'shaunsingh/nord.nvim',
     name = 'nord',
     lazy = false,
