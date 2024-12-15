@@ -58,8 +58,6 @@ vim.opt.tabstop = 4
 vim.opt.spell = true
 vim.opt.spelllang = { "en_gb" }
 
--- Define the key mapping
-
 -- Disable line wrapping
 vim.o.wrap = true
 vim.o.linebreak = true
@@ -168,14 +166,21 @@ require('lazy').setup {
       require('which-key').setup()
 
       -- Document existing key chains
-      require('which-key').register {
-        ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
-        ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
-        ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-        ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-        ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
+      require('which-key').add {
+        { '<leader>c', group = '[C]ode' },
+        { '<leader>d', group = '[D]ocument' },
+        { '<leader>r', group = '[R]ename' },
+        { '<leader>s', group = '[S]earch' },
+        { '<leader>w', group = '[W]orkspace' },
+        { '<leader>t', group = '[T]oggle' },
+        { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
       }
     end,
+  },
+  {
+    'mrcjkb/haskell-tools.nvim',
+    version = '^4', -- Recommended
+    lazy = false, -- This plugin is already lazy
   },
   { -- Fuzzy Finder (files, lsp, etc)
     'nvim-telescope/telescope.nvim',
@@ -258,7 +263,7 @@ require('lazy').setup {
       -- Automatically install LSPs and related tools to stdpath for neovim
       "williamboman/mason.nvim",
       'williamboman/mason-lspconfig.nvim',
-      -- 'WhoIsSethDaniel/mason-tool-installer.nvim',
+      'WhoIsSethDaniel/mason-tool-installer.nvim',
 
       -- Useful status updates for LSP.
       { 'j-hui/fidget.nvim', opts = {} },
@@ -347,6 +352,27 @@ require('lazy').setup {
         },
       }
 
+      require('lspconfig').rust_analyzer.setup {
+        settings = {
+          ["rust-analyzer"] = {
+            imports = {
+              granularity = {
+                group = "module",
+              },
+              prefix = "self",
+            },
+            cargo = {
+              buildScripts = {
+                enable = true,
+              },
+            },
+            procMacro = {
+              enable = true
+            },
+          }
+        }
+      }
+
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format lua code
@@ -362,7 +388,7 @@ require('lazy').setup {
         }
       })
 
-      -- require('mason-tool-installer').setup({ ensure_installed = ensure_installed })
+      require('mason-tool-installer').setup({ ensure_installed = ensure_installed })
 
       require('mason-lspconfig').setup({
         handlers = {
@@ -410,6 +436,21 @@ require('lazy').setup {
     config = function()
       vim.cmd.colorscheme 'nord'
     end,
+    require("headlines").setup({
+      markdown = {
+        headline_highlights = {
+          "Headline1",
+          "Headline2",
+          "Headline3",
+          "Headline4",
+          "Headline5",
+          "Headline6",
+        },
+        codeblock_highlight = "CodeBlock",
+        dash_highlight = "Dash",
+        quote_highlight = "Quote",
+      },
+    })
   },
 
   -- Highlight todo, notes, etc in comments
@@ -431,6 +472,10 @@ require('lazy').setup {
     end,
   },
 
+  { -- Python indentation
+    'Vimjas/vim-python-pep8-indent'
+  },
+
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
@@ -439,26 +484,24 @@ require('lazy').setup {
 
       ---@diagnostic disable-next-line: missing-fields
       require('nvim-treesitter.configs').setup {
-        ensure_installed = { 'bash', 'c', 'html', 'lua', 'markdown', 'vim', 'vimdoc' },
+        ensure_installed = { 'bash', 'c', 'html', 'lua', 'markdown', 'vim', 'vimdoc', 'python', 'rust', 'haskell' },
         -- Autoinstall languages that are not installed
         auto_install = true,
         highlight = {
           enable = true,
-          disable = { "tex" }
+          disable = { "tex" },
         },
         indent = { enable = true },
       }
-
     end,
   },
-
   { import = 'custom.plugins' },
 }
 
 vim.api.nvim_create_autocmd({ 'VimEnter', 'BufEnter', 'FileType' }, {
   desc = 'Disable TreeSitter highlighting for specific filetypes',
   group = vim.api.nvim_create_augroup('treesitter-highlight-disable', { clear = true }),
-  pattern = { 'tex', 'md' }, 
+  pattern = { 'tex' }, 
   callback = function()
     vim.cmd "TSBufDisable highlight"
   end,
