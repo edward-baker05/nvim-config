@@ -429,12 +429,22 @@ require('lazy').setup {
   },
 
   {
-    'shaunsingh/nord.nvim',
-    name = 'nord',
+    --'shaunsingh/nord.nvim',
+    --name = 'nord',
+    --lazy = false,
+    --priority = 1000,
+    --config = function()
+      --vim.cmd.colorscheme 'nord'
+    --end,
+  },
+
+  {
+    'sainnhe/gruvbox-material',
     lazy = false,
     priority = 1000,
     config = function()
-      vim.cmd.colorscheme 'nord'
+      vim.g.gruvbox_contrast_dark = 'soft'
+      vim.cmd.colorscheme('gruvbox-material')
     end,
   },
 
@@ -455,6 +465,10 @@ require('lazy').setup {
         return '%2l:%-2v'
       end
     end,
+  },
+
+  { -- Measure startup time by calling nvim --startuptime or :StartupTime}
+    'dstein64/vim-startuptime'
   },
 
   { -- Python indentation
