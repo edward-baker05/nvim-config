@@ -18,7 +18,7 @@ snippet beg "begin{} / end{}" bA
 endsnippet
 
 snippet today "Date"
-`date %d-%m-%Y`
+`date +%d-%m-%Y`
 endsnippet
 
 snippet mk "Math" wA
@@ -37,5 +37,5 @@ $1
 endsnippet
 
 snippet lec "Lecture" bA
-\lecture{num}{day date month time}{Title}
+\lecture{$1}{`date +%d-%m-%y`}{$0}
 endsnippet
