@@ -54,14 +54,20 @@ vim.opt.scrolloff = 10
 vim.opt.shiftwidth = 4
 vim.opt.tabstop = 4
 
--- Set spellcheck settings
-vim.opt.spell = true
-vim.opt.spelllang = { "en_gb" }
-
 -- Disable line wrapping
 vim.o.wrap = true
 vim.o.linebreak = true
 vim.o.list = false
+
+-- Set spellcheck settings
+vim.opt.spell = true
+vim.opt.spelllang = { "en_gb" }
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "python" }, -- Add file types where you want spellcheck disabled
+  callback = function()
+    vim.opt_local.spell = false
+  end,
+})
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
