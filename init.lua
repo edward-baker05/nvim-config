@@ -71,7 +71,53 @@ vim.api.nvim_create_autocmd("FileType", {
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
---  Spellcheck
+
+-- IMPORTANT: You might need to set up keymaps for mini.completion
+-- Example keymaps (add these outside the mini.nvim config block,
+-- typically in your general keymap setup file or section):
+vim.keymap.set('i', '<Tab>', function()
+  if vim.fn.pumvisible() == 1 then
+    return '<C-n>' -- Select next item
+  elseif require('mini.completion').can_complete_as_is() then
+    return require('mini.completion').trigger_completion(false) -- Trigger completion
+  else
+    return '<Tab>' -- Insert literal tab
+  end
+end, { expr = true, noremap = true, silent = true })
+ vim.keymap.set('i', '<S-Tab>', function()
+  if vim.fn.pumvisible() == 1 then
+    return '<C-p>' -- Select previous item
+  else
+    return '<S-Tab>' -- Fallback (might not be needed)
+  end
+end, { expr = true, noremap = true, silent = true })
+ vim.keymap.set('i', '<CR>', function()
+  if vim.fn.pumvisible() == 1 then
+    -- If you want completion item confirmation to insert a newline,
+    -- use `"<C-y><CR>"` or `require('mini.completion').confirm_completion() .. "<CR>"`
+    -- If you want confirmation to just confirm without adding a newline:
+    return vim.fn['mini#completion#confirm']() -- Confirm selection
+    -- Or using Lua function:
+    -- return require('mini.completion').confirm_completion()
+  else
+    -- If pum is not visible, execute default <CR> (insert newline)
+    -- The `feedkeys` approach ensures other mappings for <CR> can still work
+    return vim.api.nvim_replace_termcodes('<CR>', true, false, true)
+  end
+end, { expr = true, noremap = true, silent = true })
+ vim.keymap.set('i', '<Esc>', function()
+  if vim.fn.pumvisible() == 1 then
+    -- If popup menu is visible, close it
+     return vim.fn['mini#completion#close_popup']()
+     -- Or using Lua function:
+     -- return require('mini.completion').close_popup()
+  else
+    -- Otherwise, do normal Esc behavior
+    return vim.api.nvim_replace_termcodes('<Esc>', true, false, true)
+  end
+end, { expr = true, noremap = true, silent = true })
+
+-- Spellcheck
 vim.api.nvim_set_keymap('i', '<C-l>', '<c-g>u<Esc>[s1z=`]a<c-g>u', { noremap = true, silent = true })
 
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
@@ -479,17 +525,77 @@ require('lazy').setup {
 
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
+    lazy = false, -- Make sure mini.nvim loads early if completions are desired quickly
     config = function()
+      -- Enable core mini modules
       require('mini.ai').setup { n_lines = 500 }
       require('mini.surround').setup()
 
-      -- Simple and easy statusline.
-      local statusline = require 'mini.statusline'
-      statusline.setup()
+      -- Enable mini.completion with default settings
+      require('mini.completion').setup()
 
+      -- Setup mini.statusline
+      local statusline = require 'mini.statusline'
+      statusline.setup {
+        -- Set use_icons to true if you have a nerd font and want icons
+        use_icons = vim.g.have_nerd_font,
+        -- Or force icons regardless of nerd font detection:
+        -- use_icons = true,
+      }
+
+      -- Customize statusline section (example unchanged from your original)
       statusline.section_location = function()
         return '%2l:%-2v'
       end
+
+      -- IMPORTANT: You might need to set up keymaps for mini.completion
+      -- Example keymaps (add these outside the mini.nvim config block,
+      -- typically in your general keymap setup file or section):
+      -- vim.keymap.set('i', '<Tab>', function()
+      --   if vim.fn.pumvisible() == 1 then
+      --     return '<C-n>' -- Select next item
+      --   elseif require('mini.completion').can_complete_as_is() then
+      --     return require('mini.completion').trigger_completion(false) -- Trigger completion
+      --   else
+      --     return '<Tab>' -- Insert literal tab
+      --   end
+      -- end, { expr = true, noremap = true, silent = true })
+
+      -- vim.keymap.set('i', '<S-Tab>', function()
+      --   if vim.fn.pumvisible() == 1 then
+      --     return '<C-p>' -- Select previous item
+      --   else
+      --     return '<S-Tab>' -- Fallback (might not be needed)
+      --   end
+      -- end, { expr = true, noremap = true, silent = true })
+
+      -- vim.keymap.set('i', '<CR>', function()
+      --   if vim.fn.pumvisible() == 1 then
+      --     -- If you want completion item confirmation to insert a newline,
+      --     -- use `"<C-y><CR>"` or `require('mini.completion').confirm_completion() .. "<CR>"`
+      --     -- If you want confirmation to just confirm without adding a newline:
+      --     return vim.fn['mini#completion#confirm']() -- Confirm selection
+      --     -- Or using Lua function:
+      --     -- return require('mini.completion').confirm_completion()
+      --   else
+      --     -- If pum is not visible, execute default <CR> (insert newline)
+      --     -- The `feedkeys` approach ensures other mappings for <CR> can still work
+      --     return vim.api.nvim_replace_termcodes('<CR>', true, false, true)
+      --   end
+      -- end, { expr = true, noremap = true, silent = true })
+
+      -- vim.keymap.set('i', '<Esc>', function()
+      --   if vim.fn.pumvisible() == 1 then
+      --     -- If popup menu is visible, close it
+      --      return vim.fn['mini#completion#close_popup']()
+      --      -- Or using Lua function:
+      --      -- return require('mini.completion').close_popup()
+      --   else
+      --     -- Otherwise, do normal Esc behavior
+      --     return vim.api.nvim_replace_termcodes('<Esc>', true, false, true)
+      --   end
+      -- end, { expr = true, noremap = true, silent = true })
+
     end,
   },
 
