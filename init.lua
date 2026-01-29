@@ -2,6 +2,7 @@
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
+
 -- [[ Setting options ]]
 -- Make line numbers default
 vim.opt.number = true
@@ -177,6 +178,8 @@ vim.opt.rtp:prepend(lazypath)
 
 require('lazy').setup {
   'tpope/vim-sleuth',
+  
+  { 'glacambre/firenvim', build = ":call firenvim#install(0)" },
 
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
