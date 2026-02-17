@@ -51,75 +51,11 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
--- Set tab sizes
-vim.opt.shiftwidth = 4
-vim.opt.tabstop = 4
-
 -- Disable line wrapping
-vim.o.wrap = true
-vim.o.linebreak = true
-vim.o.list = false
-
--- Set spellcheck settings
-vim.opt.spell = true
-vim.opt.spelllang = { "en_gb" }
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = { "python" }, -- Add file types where you want spellcheck disabled
-  callback = function()
-    vim.opt_local.spell = false
-  end,
-})
+vim.o.wrap = false
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
-
--- IMPORTANT: You might need to set up keymaps for mini.completion
--- Example keymaps (add these outside the mini.nvim config block,
--- typically in your general keymap setup file or section):
-vim.keymap.set('i', '<Tab>', function()
-  if vim.fn.pumvisible() == 1 then
-    return '<C-n>' -- Select next item
-  elseif require('mini.completion').can_complete_as_is() then
-    return require('mini.completion').trigger_completion(false) -- Trigger completion
-  else
-    return '<Tab>' -- Insert literal tab
-  end
-end, { expr = true, noremap = true, silent = true })
- vim.keymap.set('i', '<S-Tab>', function()
-  if vim.fn.pumvisible() == 1 then
-    return '<C-p>' -- Select previous item
-  else
-    return '<S-Tab>' -- Fallback (might not be needed)
-  end
-end, { expr = true, noremap = true, silent = true })
- vim.keymap.set('i', '<CR>', function()
-  if vim.fn.pumvisible() == 1 then
-    -- If you want completion item confirmation to insert a newline,
-    -- use `"<C-y><CR>"` or `require('mini.completion').confirm_completion() .. "<CR>"`
-    -- If you want confirmation to just confirm without adding a newline:
-    return vim.fn['mini#completion#confirm']() -- Confirm selection
-    -- Or using Lua function:
-    -- return require('mini.completion').confirm_completion()
-  else
-    -- If pum is not visible, execute default <CR> (insert newline)
-    -- The `feedkeys` approach ensures other mappings for <CR> can still work
-    return vim.api.nvim_replace_termcodes('<CR>', true, false, true)
-  end
-end, { expr = true, noremap = true, silent = true })
- vim.keymap.set('i', '<Esc>', function()
-  if vim.fn.pumvisible() == 1 then
-    -- If popup menu is visible, close it
-     return vim.fn['mini#completion#close_popup']()
-     -- Or using Lua function:
-     -- return require('mini.completion').close_popup()
-  else
-    -- Otherwise, do normal Esc behavior
-    return vim.api.nvim_replace_termcodes('<Esc>', true, false, true)
-  end
-end, { expr = true, noremap = true, silent = true })
-
--- Spellcheck
-vim.api.nvim_set_keymap('i', '<C-l>', '<c-g>u<Esc>[s1z=`]a<c-g>u', { noremap = true, silent = true })
 
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
@@ -178,8 +114,6 @@ vim.opt.rtp:prepend(lazypath)
 
 require('lazy').setup {
   'tpope/vim-sleuth',
-  
-  { 'glacambre/firenvim', build = ":call firenvim#install(0)" },
 
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
@@ -335,16 +269,24 @@ require('lazy').setup {
     config = function()
       -- 1. Setup Mason first
       require('mason').setup()
-      
+
       -- 2. Ensure tools are installed
       require('mason-tool-installer').setup {
         ensure_installed = { 'pyright', 'stylua' }
       }
 
-      -- 3. Define Keymaps (Runs when LSP attaches)
+      -- 3. Autoformat toggle
+      local format_is_enabled = true
+      vim.api.nvim_create_user_command('KickstartFormatToggle', function()
+        format_is_enabled = not format_is_enabled
+        print('Setting autoformatting to: ' .. tostring(format_is_enabled))
+      end, {})
+
+      -- 4. Define Keymaps and Autoformatting (Runs when LSP attaches)
       vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
         callback = function(event)
+          -- Setup keymaps
           local map = function(keys, func, desc)
             vim.keymap.set('n', keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
           end
@@ -356,12 +298,44 @@ require('lazy').setup {
           map('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
           map('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
           map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
-          
           map('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
+
+          -- Setup autoformatting on save
+          local client_id = event.data.client_id
+          local client = vim.lsp.get_client_by_id(client_id)
+          local bufnr = event.buf
+
+          -- Only attach to clients that support document formatting
+          if not client.server_capabilities.documentFormattingProvider then
+            return
+          end
+
+          -- Tsserver usually works poorly
+          if client.name == 'tsserver' then
+            return
+          end
+
+          -- Create an autocmd that will run before we save the buffer
+          vim.api.nvim_create_autocmd('BufWritePre', {
+            group = vim.api.nvim_create_augroup('lsp-format-' .. client.name, { clear = false }),
+            buffer = bufnr,
+            callback = function()
+              if not format_is_enabled then
+                return
+              end
+
+              vim.lsp.buf.format {
+                async = false,
+                filter = function(c)
+                  return c.id == client_id
+                end,
+              }
+            end,
+          })
         end,
       })
 
-      -- 4. Setup Servers
+      -- 5. Setup Servers
       local capabilities = vim.lsp.protocol.make_client_capabilities()
 
       require('mason-lspconfig').setup {
@@ -405,19 +379,6 @@ require('lazy').setup {
     end
   },
 
-  {
-    'SirVer/ultisnips',
-    init = function()
-      vim.g.UltiSnipsSnippetDirectories = {"~/.config/nvim/UltiSnips"}
-      vim.g.UltiSnipsExpandTrigger = '<tab>'
-      vim.g.UltiSnipsJumpForwardTrigger = '<tab>'
-      vim.g.UltiSnipsJumpBackwardTrigger = '<s-tab>'
-    end,
-  },
-
-  {
-    'honza/vim-snippets'
-  },
 
   {
     --'shaunsingh/nord.nvim',
@@ -444,14 +405,11 @@ require('lazy').setup {
 
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
-    lazy = false, -- Make sure mini.nvim loads early if completions are desired quickly
+    lazy = false,
     config = function()
       -- Enable core mini modules
       require('mini.ai').setup { n_lines = 500 }
       require('mini.surround').setup()
-
-      -- Enable mini.completion with default settings
-      require('mini.completion').setup()
 
       -- Setup mini.statusline
       local statusline = require 'mini.statusline'
@@ -466,55 +424,6 @@ require('lazy').setup {
       statusline.section_location = function()
         return '%2l:%-2v'
       end
-
-      -- IMPORTANT: You might need to set up keymaps for mini.completion
-      -- Example keymaps (add these outside the mini.nvim config block,
-      -- typically in your general keymap setup file or section):
-      -- vim.keymap.set('i', '<Tab>', function()
-      --   if vim.fn.pumvisible() == 1 then
-      --     return '<C-n>' -- Select next item
-      --   elseif require('mini.completion').can_complete_as_is() then
-      --     return require('mini.completion').trigger_completion(false) -- Trigger completion
-      --   else
-      --     return '<Tab>' -- Insert literal tab
-      --   end
-      -- end, { expr = true, noremap = true, silent = true })
-
-      -- vim.keymap.set('i', '<S-Tab>', function()
-      --   if vim.fn.pumvisible() == 1 then
-      --     return '<C-p>' -- Select previous item
-      --   else
-      --     return '<S-Tab>' -- Fallback (might not be needed)
-      --   end
-      -- end, { expr = true, noremap = true, silent = true })
-
-      -- vim.keymap.set('i', '<CR>', function()
-      --   if vim.fn.pumvisible() == 1 then
-      --     -- If you want completion item confirmation to insert a newline,
-      --     -- use `"<C-y><CR>"` or `require('mini.completion').confirm_completion() .. "<CR>"`
-      --     -- If you want confirmation to just confirm without adding a newline:
-      --     return vim.fn['mini#completion#confirm']() -- Confirm selection
-      --     -- Or using Lua function:
-      --     -- return require('mini.completion').confirm_completion()
-      --   else
-      --     -- If pum is not visible, execute default <CR> (insert newline)
-      --     -- The `feedkeys` approach ensures other mappings for <CR> can still work
-      --     return vim.api.nvim_replace_termcodes('<CR>', true, false, true)
-      --   end
-      -- end, { expr = true, noremap = true, silent = true })
-
-      -- vim.keymap.set('i', '<Esc>', function()
-      --   if vim.fn.pumvisible() == 1 then
-      --     -- If popup menu is visible, close it
-      --      return vim.fn['mini#completion#close_popup']()
-      --      -- Or using Lua function:
-      --      -- return require('mini.completion').close_popup()
-      --   else
-      --     -- Otherwise, do normal Esc behavior
-      --     return vim.api.nvim_replace_termcodes('<Esc>', true, false, true)
-      --   end
-      -- end, { expr = true, noremap = true, silent = true })
-
     end,
   },
 
