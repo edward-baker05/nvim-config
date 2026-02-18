@@ -17,7 +17,8 @@
 | `<leader><leader>` | Switch buffers | Quickly jump between open files |
 | `<leader>/` | Search in current buffer | Fuzzy find within current file |
 | `<leader>s.` | Recent files | Reopen recently used files |
-| `<C-e>` | File explorer (netrw) | Traditional file browser |
+| `<C-e>` | File explorer (netrw) | Quick traditional file browser |
+| `<leader>te` | Toggle Neo-tree sidebar | Modern persistent file tree with preview |
 
 ### **Harpoon - Lightning Fast Navigation**
 | Keybind | Action | Workflow |
@@ -28,6 +29,33 @@
 | `<leader>r1` to `<leader>r5` | Remove mark 1-5 | Clean up your marks |
 
 **Harpoon Workflow:** Mark your main files (e.g., 1=main.py, 2=test.py, 3=config.py), then use `<leader>1-5` to instantly jump between them. Game-changer for working with 3-5 core files!
+
+### **Neo-tree - Sidebar File Browser**
+| Keybind | Action | Notes |
+|---------|--------|-------|
+| `<leader>te` | Toggle sidebar | Open/close the file tree |
+| **Navigation** | | |
+| `<CR>` (Enter) | Open file/folder | |
+| `-` or `<BS>` | Go up to parent directory | Same as netrw |
+| **File Operations** | | |
+| `a` | Create new file | Like `%` in netrw |
+| `A` | Create new directory | Like `d` in netrw |
+| `d` | Delete file/folder | Like `D` in netrw |
+| `r` | Rename file/folder | Like `R` in netrw |
+| `c` | Copy file/folder | |
+| `x` | Cut file/folder | |
+| `p` | Paste file/folder | |
+| `y` | Copy name/path | |
+| **View Options** | | |
+| `P` | Toggle preview | Split preview of file |
+| `H` | Toggle hidden files | Show/hide dotfiles |
+| `.` | Set root to current dir | |
+| `R` | Refresh tree | |
+| **Help** | | |
+| `?` | Show all keybinds | Full help menu |
+| `q` | Close neo-tree | |
+
+**Tip:** Use `<C-e>` for quick file browsing in the current directory, and `<leader>te` for a persistent sidebar when working across multiple directories.
 
 ---
 
@@ -180,7 +208,7 @@ Use with any operator (`d`, `c`, `v`, `y`, etc.):
 | `<C-Space>` | Manually trigger completion |
 | `<C-n>` / `<C-p>` | Navigate items (alternative) |
 | `<C-y>` | Accept completion |
-| `<C-e>` | Close completion menu |
+| `<C-e>` | Close completion menu (when menu is open) |
 
 ### **Snippet Navigation**
 | Keybind | Action |
@@ -329,7 +357,6 @@ Use with any operator (`d`, `c`, `v`, `y`, etc.):
 ## 🚀 **Features You Could Add** (Not Installed Yet)
 
 ### **Highly Recommended**
-- **nvim-tree** or **neo-tree** - Better file explorer than netrw
 - **gitsigns** hunks operations - Stage/undo hunks visually (you have gitsigns but may not know the features!)
 - **trouble.nvim** - Better diagnostic/quickfix list
 - **vim-fugitive** - Git integration (stage, commit, diff, blame)
@@ -369,6 +396,7 @@ Use with any operator (`d`, `c`, `v`, `y`, etc.):
 ```
 <leader>sf   - Find files
 <leader>sg   - Search in files
+<leader>te   - Toggle file tree (Neo-tree)
 gd           - Go to definition
 <leader>rn   - Rename
 <leader>a    - Mark file (Harpoon)
@@ -383,4 +411,4 @@ K            - Show docs
 
 ---
 
-*Last updated: After your config cleanup. Everything listed here is currently installed and working!*
+*Last updated: 2026-02-18. Neo-tree file browser added. Everything listed here is currently installed and working!*

@@ -34,6 +34,13 @@ This is a personal Neovim configuration based on Kickstart.nvim, using lazy.nvim
 - `mini.statusline` - Lightweight statusline from mini.nvim
 - Configured in init.lua with custom location format
 
+**File Browser**:
+- `neo-tree` - Modern file explorer sidebar (installed alongside netrw)
+- Configured in init.lua with preview mode enabled
+- Toggle with `<leader>te`
+- Netrw still available via `<C-e>` for quick browsing
+- Dependencies: nvim-lsp-file-operations (LSP-aware file ops), nvim-window-picker
+
 ### Language-Specific Configurations
 
 **LaTeX** (heavily customized):
@@ -107,6 +114,21 @@ nvim --startuptime startup.log
 :KickstartFormatToggle
 ```
 
+### Neo-tree (File Browser)
+```bash
+# Toggle sidebar
+<leader>te
+
+# Inside neo-tree sidebar:
+a          # Create new file
+A          # Create new directory
+d          # Delete file/folder
+r          # Rename file/folder
+c/x/p      # Copy/cut/paste
+P          # Toggle preview
+?          # Show all keybinds
+```
+
 ### Testing Changes
 After editing config files:
 ```vim
@@ -131,8 +153,12 @@ After editing config files:
 - `<C-l>/<C-h>` - Snippet navigation (forward/backward)
 - `<C-y>` - Accept completion
 
+### File Browsers
+- `<C-e>` - Open netrw file explorer (quick browsing)
+- `<leader>te` - Toggle neo-tree sidebar (persistent file tree)
+- Inside neo-tree: `P` to toggle preview, `?` for help
+
 ### Other
-- `<C-e>` - Open netrw file explorer
 - `;` - Enter command mode (alias for `:`)
 - `j`/`k` - Move by visual lines (not physical lines)
 
