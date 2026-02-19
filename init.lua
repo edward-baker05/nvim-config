@@ -375,7 +375,7 @@ require("lazy").setup({
 				popup_border_style = "rounded",
 				enable_git_status = true,
 				enable_diagnostics = true,
-				filesystem = {
+	filesystem = {
 					follow_current_file = {
 						enabled = true,
 					},
@@ -394,18 +394,10 @@ require("lazy").setup({
 						["P"] = { "toggle_preview", config = { use_float = false, use_image_nvim = true } },
 					},
 				},
-				default_component_configs = {
-					preview = {
-						enabled = true,
-					},
-				},
-				preview = {
-					enabled = true, -- Enable preview by default
-				},
 			})
 
 			-- Keymaps
-			vim.keymap.set("n", "<leader>te", "<cmd>Neotree toggle show preview<CR>", { desc = "[T]oggle [E]xplorer sidebar" })
+			vim.keymap.set("n", "<leader>te", "<cmd>Neotree toggle show<CR>", { desc = "[T]oggle [E]xplorer sidebar" })
 		end,
 	},
 	{
