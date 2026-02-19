@@ -174,6 +174,20 @@ Use with any operator (`d`, `c`, `v`, `y`, etc.):
 
 ---
 
+## 📝 **Markdown Preview (Markpad)**
+
+| Keybind | Action | Notes |
+|---------|--------|-------|
+| `<leader>tp` | Toggle Markpad preview | Only available in markdown buffers |
+
+- **Toggle ON:** opens the current `.md` file in Markpad and tracks future buffer switches
+- **Toggle OFF:** stops auto-switching (Markpad stays open)
+- While the toggle is ON, moving to any other `.md` file will automatically open it in Markpad
+- Markpad remains open if you close the buffer in Neovim — it's a separate app
+- State is global: toggling in one markdown buffer affects all markdown buffers
+
+---
+
 ## 📝 **LaTeX with VimTeX**
 
 ### **Compilation & Viewing**
@@ -411,4 +425,4 @@ K            - Show docs
 
 ---
 
-*Last updated: 2026-02-18. Neo-tree file browser added. Everything listed here is currently installed and working!*
+*Last updated: 2026-02-19. Markpad preview toggle added (`<leader>tp`, markdown only). Everything listed here is currently installed and working!*

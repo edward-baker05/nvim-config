@@ -73,20 +73,6 @@ vim.keymap.set("n", "k", "gk")
 vim.keymap.set("n", "<C-e>", "<cmd>Ex<CR>")
 vim.keymap.set("n", ";", "<ESC>:")
 
--- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
--- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
--- is not what someone will guess without a bit more experience.
---
--- NOTE: This won't work in all terminal emulators/tmux/etc. Try your own mapping
--- or just use <C-\><C-n> to exit terminal mode
-vim.keymap.set("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
-
--- TIP: Disable arrow keys in normal mode
-vim.keymap.set("n", "<left>", '<cmd>echo "Use h to move!!"<CR>')
-vim.keymap.set("n", "<right>", '<cmd>echo "Use l to move!!"<CR>')
-vim.keymap.set("n", "<up>", '<cmd>echo "Use k to move!!"<CR>')
-vim.keymap.set("n", "<down>", '<cmd>echo "Use j to move!!"<CR>')
-
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -134,21 +120,6 @@ require("lazy").setup({
 		},
 	},
 
-	-- NOTE: Plugins can also be configured to run lua code when they are loaded.
-	--
-	-- This is often very useful to both group configuration, as well as handle
-	-- lazy loading plugins that don't need to be loaded immediately at startup.
-	--
-	-- For example, in the following configuration, we use:
-	--  event = 'VimEnter'
-	--
-	-- which loads which-key before all the UI elements are loaded. Events can be
-	-- normal autocommands events (`:help autocmd-events`).
-	--
-	-- Then, because we use the `config` key, the configuration only runs
-	-- after the plugin has been loaded:
-	--  config = function() ... end
-
 	{ -- Useful plugin to show you pending keybinds.
 		"folke/which-key.nvim",
 		event = "VimEnter", -- Sets the loading event to 'VimEnter'
@@ -167,11 +138,7 @@ require("lazy").setup({
 			})
 		end,
 	},
-	{
-		"mrcjkb/haskell-tools.nvim",
-		version = "^4", -- Recommended
-		lazy = false, -- This plugin is already lazy
-	},
+
 	{ -- Fuzzy Finder (files, lsp, etc)
 		"nvim-telescope/telescope.nvim",
 		event = "VimEnter",
@@ -375,7 +342,7 @@ require("lazy").setup({
 				popup_border_style = "rounded",
 				enable_git_status = true,
 				enable_diagnostics = true,
-	filesystem = {
+				filesystem = {
 					follow_current_file = {
 						enabled = true,
 					},
@@ -408,25 +375,6 @@ require("lazy").setup({
 		},
 		config = function()
 			require("lsp-file-operations").setup()
-		end,
-	},
-	{
-		"s1n7ax/nvim-window-picker",
-		version = "2.*",
-		config = function()
-			require("window-picker").setup({
-				filter_rules = {
-					include_current_win = false,
-					autoselect_one = true,
-					-- filter using buffer options
-					bo = {
-						-- if the file type is one of following, the window will be ignored
-						filetype = { "neo-tree", "neo-tree-popup", "notify" },
-						-- if the buffer type is one of following, the window will be ignored
-						buftype = { "terminal", "quickfix" },
-					},
-				},
-			})
 		end,
 	},
 
@@ -551,6 +499,49 @@ vim.api.nvim_create_autocmd({ "VimEnter", "BufEnter", "FileType" }, {
 		vim.cmd("TSBufDisable highlight")
 	end,
 })
+
+-- Markpad preview toggle (markdown files only)
+do
+	vim.g.markpad_preview_active = false
+	local markpad_augroup = vim.api.nvim_create_augroup("MarkpadPreview", { clear = true })
+
+	local function open_in_markpad()
+		local filepath = vim.fn.expand("%:p")
+		if filepath ~= "" then
+			vim.fn.jobstart({ "open", "-g", "-a", "Markpad", filepath }, { detach = true })
+		end
+	end
+
+	local function enable_markpad()
+		vim.g.markpad_preview_active = true
+		open_in_markpad()
+		vim.api.nvim_create_autocmd("BufEnter", {
+			group = markpad_augroup,
+			pattern = "*.md",
+			callback = open_in_markpad,
+		})
+		vim.notify("Markpad preview: ON", vim.log.levels.INFO)
+	end
+
+	local function disable_markpad()
+		vim.g.markpad_preview_active = false
+		vim.api.nvim_clear_autocmds({ group = markpad_augroup })
+		vim.notify("Markpad preview: OFF", vim.log.levels.INFO)
+	end
+
+	vim.api.nvim_create_autocmd("FileType", {
+		pattern = "markdown",
+		callback = function()
+			vim.keymap.set("n", "<leader>tp", function()
+				if vim.g.markpad_preview_active then
+					disable_markpad()
+				else
+					enable_markpad()
+				end
+			end, { buffer = true, desc = "[T]oggle [P]review in Markpad" })
+		end,
+	})
+end
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
