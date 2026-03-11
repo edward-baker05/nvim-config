@@ -37,10 +37,6 @@ vim.opt.timeoutlen = 300
 vim.opt.splitright = true
 vim.opt.splitbelow = true
 
--- Sets how neovim will display certain whitespace in the editor.
-vim.opt.list = true
-vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
-
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = "split"
 
@@ -50,8 +46,14 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
--- Disable line wrapping
-vim.o.wrap = false
+-- Enable line wrapping
+vim.o.wrap = true
+
+-- Smooth scrolling for wrapped lines
+vim.opt.smoothscroll = true
+
+-- Allow cursor to move into empty space in visual block mode
+vim.opt.virtualedit = "block"
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
@@ -59,6 +61,14 @@ vim.o.wrap = false
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
+
+-- Keep search results centered
+vim.keymap.set("n", "n", "nzzzv")
+vim.keymap.set("n", "N", "Nzzzv")
+
+-- Keep cursor centered during half-page jumps
+vim.keymap.set("n", "<C-d>", "<C-d>zz")
+vim.keymap.set("n", "<C-u>", "<C-u>zz")
 
 -- Diagnostic keymaps
 vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Go to previous [D]iagnostic message" })
@@ -69,6 +79,20 @@ vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagn
 -- Move by visual line
 vim.keymap.set("n", "j", "gj")
 vim.keymap.set("n", "k", "gk")
+
+-- Move selected lines in visual mode
+vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move selection down" })
+vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move selection up" })
+
+-- Persistent visual indent
+vim.keymap.set("v", "<", "<gv")
+vim.keymap.set("v", ">", ">gv")
+
+-- Seamless split navigation
+vim.keymap.set("n", "<C-h>", "<C-w><C-h>", { desc = "Move focus to the left window" })
+vim.keymap.set("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus to the right window" })
+vim.keymap.set("n", "<C-j>", "<C-w><C-j>", { desc = "Move focus to the lower window" })
+vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper window" })
 
 vim.keymap.set("n", "<C-e>", "<cmd>Ex<CR>")
 vim.keymap.set("n", ";", "<ESC>:")
@@ -233,7 +257,12 @@ require("lazy").setup({
 		},
 		config = function()
 			-- 1. Setup Mason first
-			require("mason").setup()
+			require("mason").setup({
+				registries = {
+					"github:mason-org/mason-registry", -- Default registry
+					"github:Crashdummyy/mason-registry",
+				},
+			})
 
 			-- 2. Ensure tools are installed
 			require("mason-tool-installer").setup({
@@ -329,6 +358,30 @@ require("lazy").setup({
 	},
 
 	{
+		"seblyng/roslyn.nvim",
+		ft = "cs",
+		dependencies = {
+			"mason.nvim",
+		},
+		config = function()
+			require("roslyn").setup({
+				-- Roslyn is installed via Mason, so we don't need to specify a path
+				-- but we do need to ensure the server starts correctly for Unity
+				args = {
+					"--logLevel=Information",
+					"--extensionLogDirectory=" .. vim.fs.dirname(vim.lsp.get_log_path()),
+				},
+				config = {
+					-- Your standard on_attach and capabilities here
+					on_attach = function(client, bufnr)
+						-- keybindings like gd, K, etc.
+					end,
+				},
+			})
+		end,
+	},
+
+	{
 		"nvim-neo-tree/neo-tree.nvim",
 		branch = "v3.x",
 		dependencies = {
@@ -338,7 +391,7 @@ require("lazy").setup({
 		},
 		config = function()
 			require("neo-tree").setup({
-				close_if_last_window = false,
+				close_if_last_window = true,
 				popup_border_style = "rounded",
 				enable_git_status = true,
 				enable_diagnostics = true,
@@ -431,8 +484,17 @@ require("lazy").setup({
 		lazy = false,
 		config = function()
 			-- Enable core mini modules
-			require("mini.ai").setup({ n_lines = 500 })
-			require("mini.surround").setup()
+			require("mini.surround").setup({
+				mappings = {
+					add = "gza",
+					delete = "gzd",
+					find = "gzf",
+					find_left = "gzF",
+					highlight = "gzh",
+					replace = "gzr",
+					update_n_lines = "gzn",
+				},
+			})
 
 			-- Setup mini.statusline
 			local statusline = require("mini.statusline")
@@ -454,6 +516,68 @@ require("lazy").setup({
 		"dstein64/vim-startuptime",
 	},
 
+	{ -- Visual undo history
+		"mbbill/undotree",
+		config = function()
+			vim.keymap.set("n", "<leader>u", vim.cmd.UndotreeToggle, { desc = "Toggle [U]ndotree" })
+		end,
+	},
+
+	{ -- Jump to any character on screen with 2-3 keystrokes
+		"folke/flash.nvim",
+		event = "VeryLazy",
+		opts = {},
+		keys = {
+			-- Keep s/S in visual and operator-pending modes (useful for selections/motions)
+			{
+				"s",
+				mode = { "x", "o" },
+				function()
+					require("flash").jump()
+				end,
+				desc = "Flash",
+			},
+			{
+				"S",
+				mode = { "x", "o" },
+				function()
+					require("flash").treesitter()
+				end,
+				desc = "Flash Treesitter",
+			},
+			-- Normal mode: gs/gS avoid the timeout race with <leader>cs / <leader>cS
+			{
+				"gs",
+				mode = { "n" },
+				function()
+					require("flash").jump()
+				end,
+				desc = "Flash Jump",
+			},
+			{
+				"gS",
+				mode = { "n" },
+				function()
+					require("flash").treesitter()
+				end,
+				desc = "Flash Treesitter",
+			},
+		},
+	},
+
+	{ -- Scope-aware indent guides
+		"lukas-reineke/indent-blankline.nvim",
+		main = "ibl",
+		opts = {
+			scope = {
+				enabled = true,
+				show_start = true,
+				show_end = false,
+				highlight = { "Function", "Label" },
+			},
+		},
+	},
+
 	{ -- Python indentation
 		"Vimjas/vim-python-pep8-indent",
 	},
@@ -461,6 +585,10 @@ require("lazy").setup({
 	{ -- Highlight, edit, and navigate code
 		"nvim-treesitter/nvim-treesitter",
 		build = ":TSUpdate",
+		dependencies = {
+			"nvim-treesitter/nvim-treesitter-context",
+			"nvim-treesitter/nvim-treesitter-textobjects",
+		},
 		config = function()
 			-- [[ Configure Treesitter ]] See `:help nvim-treesitter`
 
@@ -485,6 +613,78 @@ require("lazy").setup({
 					disable = { "tex" },
 				},
 				indent = { enable = true },
+				incremental_selection = {
+					enable = true,
+					keymaps = {
+						init_selection = "<c-space>",
+						node_incremental = "<CR>",
+						scope_incremental = "<c-s>",
+						node_decremental = "<BS>",
+					},
+				},
+			})
+
+			-- nvim-treesitter-textobjects was rewritten and no longer hooks into
+			-- nvim-treesitter.configs. Keymaps must be set up manually via its new API.
+			require("nvim-treesitter-textobjects").setup({
+				select = { lookahead = true, lookbehind = true },
+			})
+
+			local ts_select = require("nvim-treesitter-textobjects.select")
+			local ts_move = require("nvim-treesitter-textobjects.move")
+			local ts_swap = require("nvim-treesitter-textobjects.swap")
+
+			-- Text objects (operator-pending + visual)
+			local textobj_maps = {
+				["af"] = "@function.outer",
+				["if"] = "@function.inner",
+				["ac"] = "@class.outer",
+				["ic"] = "@class.inner",
+				["aa"] = "@parameter.outer",
+				["ia"] = "@parameter.inner",
+			}
+			for key, query in pairs(textobj_maps) do
+				local q = query
+				vim.keymap.set({ "x", "o" }, key, function()
+					ts_select.select_textobject(q)
+				end, { desc = "Textobject: " .. q })
+			end
+
+			-- Motion keymaps (normal + visual + operator-pending)
+			local motion_maps = {
+				["]m"] = { fn = ts_move.goto_next_start, query = "@function.outer" },
+				["]]"] = { fn = ts_move.goto_next_start, query = "@class.outer" },
+				["[m"] = { fn = ts_move.goto_previous_start, query = "@function.outer" },
+				["[["] = { fn = ts_move.goto_previous_start, query = "@class.outer" },
+			}
+			for key, cfg in pairs(motion_maps) do
+				local fn, query = cfg.fn, cfg.query
+				vim.keymap.set({ "n", "x", "o" }, key, function()
+					fn(query)
+				end, { desc = "Textobject move: " .. query })
+			end
+
+			-- Swap keymaps (normal mode)
+			vim.keymap.set("n", "<leader>cs", function()
+				ts_swap.swap_next("@parameter.inner")
+			end, { desc = "[C]ode [S]wap next parameter" })
+			vim.keymap.set("n", "<leader>cS", function()
+				ts_swap.swap_previous("@parameter.inner")
+			end, { desc = "[C]ode [S]wap previous parameter" })
+
+			require("treesitter-context").setup({
+				enable = true, -- Enable this plugin (Can be enabled/disabled later via commands)
+				max_lines = 3, -- How many lines the window should span. Values <= 0 mean no limit.
+				min_window_height = 0, -- Minimum editor window height to enable context. Values <= 0 mean no limit.
+				line_numbers = true,
+				multiline_threshold = 20, -- Maximum number of lines to show for a single context
+				trim_scope = "outer", -- Which context lines to discard if `max_lines` is exceeded. Choices: 'inner', 'outer'
+				mode = "cursor", -- Line used to calculate context. Choices: 'cursor', 'topline'
+				-- Separator between context and content. Should be a single character string, like '-'.
+				-- When separator is set, the context will only show up when there are at least 2 lines above cursor
+				separator = nil,
+				zindex = 20, -- The Z-index of the context window
+				on_attach = nil, -- (fun(buf: integer): boolean) return false to disable attaching
 			})
 		end,
 	},
@@ -508,7 +708,14 @@ do
 	local function open_in_markpad()
 		local filepath = vim.fn.expand("%:p")
 		if filepath ~= "" then
-			vim.fn.jobstart({ "open", "-g", "-a", "Markpad", filepath }, { detach = true })
+			-- Save focus, open Markpad (try background), wait for focus theft, then restore focus
+			local cmd = "current_app=$(osascript -e 'tell application \"System Events\" to get name of first application process whose frontmost is true'); "
+				.. "open -g -a 'Markpad' "
+				.. vim.fn.shellescape(filepath)
+				.. "; "
+				.. "sleep 0.2; "
+				.. 'osascript -e "tell application \\"$current_app\\" to activate"'
+			vim.fn.jobstart({ "sh", "-c", cmd }, { detach = true })
 		end
 	end
 

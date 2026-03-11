@@ -19,6 +19,15 @@
 | `<leader>s.` | Recent files | Reopen recently used files |
 | `<C-e>` | File explorer (netrw) | Quick traditional file browser |
 | `<leader>te` | Toggle Neo-tree sidebar | Modern persistent file tree with preview |
+| `<leader>u` | Toggle Undotree | Visual history of your undo tree |
+
+### **Flash - Lightning Fast Jumping**
+| Keybind | Action | Workflow |
+|---------|--------|----------|
+| `s` | Flash jump | Type `s` + first char of word on screen to jump |
+| `S` | Flash treesitter | Select entire code blocks (functions, loops) instantly |
+
+**Tip:** `s` is the most powerful movement tool in this config. Type it, look for the highlighted letter, and hit that letter to jump there instantly!
 
 ### **Harpoon - Lightning Fast Navigation**
 | Keybind | Action | Workflow |
@@ -242,6 +251,9 @@ Use with any operator (`d`, `c`, `v`, `y`, etc.):
 | `j` / `k` | Move by visual line | Works with wrapped lines |
 | `;` | Enter command mode | Alternative to `:` |
 | `<C-e>` | File explorer | Opens netrw |
+| `>` / `<` | Indent/dedent | **Stays in visual mode!** |
+| `J` / `K` | Move selection down/up | (Visual mode only) Move the selected block |
+| `<C-h/j/k/l>`| Fast split navigation | Move between windows without `<C-w>` |
 
 ### **Classic Vim Power Moves** (You might not know!)
 | Keybind | Action | Example Use |
@@ -253,6 +265,8 @@ Use with any operator (`d`, `c`, `v`, `y`, etc.):
 | `dit` | Delete inside tag | Delete HTML/XML tag contents |
 | `>` / `<` | Indent/dedent | `>ap` indent paragraph |
 | `zz` | Center cursor line | Better view of code |
+| `n` / `N` | Next/Prev search | **Now auto-centers!** |
+| `<C-d>` / `<C-u>` | Half-page jump | **Now auto-centers!** |
 | `zt` / `zb` | Top/bottom cursor line | Adjust view |
 | `<C-o>` / `<C-i>` | Jump backward/forward | Navigate jump history |
 
