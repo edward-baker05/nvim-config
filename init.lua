@@ -584,48 +584,36 @@ require("lazy").setup({
 
 	{ -- Highlight, edit, and navigate code
 		"nvim-treesitter/nvim-treesitter",
+		branch = "main",
 		build = ":TSUpdate",
 		dependencies = {
-			"nvim-treesitter/nvim-treesitter-context",
-			"nvim-treesitter/nvim-treesitter-textobjects",
+			{ "nvim-treesitter/nvim-treesitter-context" },
+			{ "nvim-treesitter/nvim-treesitter-textobjects" },
 		},
 		config = function()
-			-- [[ Configure Treesitter ]] See `:help nvim-treesitter`
+			local langs = { "c", "lua", "vim", "vimdoc", "markdown", "python" }
 
-			--@diagnostic disable-next-line: missing-fields
-			require("nvim-treesitter.configs").setup({
-				ensure_installed = {
-					"c",
-					"lua",
-			       "vim", 
-			       "vimdoc",
-					"markdown",
-					"python"
-				},
-				-- Autoinstall languages that are not installed
-				auto_install = true,
-				highlight = {
-					enable = true,
-					disable = { "tex" },
-				},
-				indent = { enable = true },
-				incremental_selection = {
-					enable = true,
-					keymaps = {
-						init_selection = "<c-space>",
-						node_incremental = "<CR>",
-						scope_incremental = "<c-s>",
-						node_decremental = "<BS>",
-					},
-				},
+			-- 1. Explicitly install your parsers
+			require("nvim-treesitter").install(langs)
+
+			-- 2. Enable Highlighting and Indentation via Neovim's native API
+			vim.api.nvim_create_autocmd("FileType", {
+				group = vim.api.nvim_create_augroup("TreesitterSetup", { clear = true }),
+				pattern = langs,
+				callback = function(args)
+					-- Replicating your LaTeX exception
+					if args.match == "tex" then
+						return
+					end
+
+					-- Start syntax highlighting
+					pcall(vim.treesitter.start, args.buf)
+					-- Enable Treesitter-based indentation
+					vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+				end,
 			})
 
-			-- nvim-treesitter-textobjects was rewritten and no longer hooks into
-			-- nvim-treesitter.configs. Keymaps must be set up manually via its new API.
-			require("nvim-treesitter-textobjects").setup({
-				select = { lookahead = true, lookbehind = true },
-			})
-
+			-- 3. Text Objects Integration
 			local ts_select = require("nvim-treesitter-textobjects.select")
 			local ts_move = require("nvim-treesitter-textobjects.move")
 			local ts_swap = require("nvim-treesitter-textobjects.swap")
@@ -640,10 +628,9 @@ require("lazy").setup({
 				["ia"] = "@parameter.inner",
 			}
 			for key, query in pairs(textobj_maps) do
-				local q = query
 				vim.keymap.set({ "x", "o" }, key, function()
-					ts_select.select_textobject(q)
-				end, { desc = "Textobject: " .. q })
+					ts_select.select_textobject(query)
+				end, { desc = "Textobject: " .. query })
 			end
 
 			-- Motion keymaps (normal + visual + operator-pending)
@@ -654,10 +641,9 @@ require("lazy").setup({
 				["[["] = { fn = ts_move.goto_previous_start, query = "@class.outer" },
 			}
 			for key, cfg in pairs(motion_maps) do
-				local fn, query = cfg.fn, cfg.query
 				vim.keymap.set({ "n", "x", "o" }, key, function()
-					fn(query)
-				end, { desc = "Textobject move: " .. query })
+					cfg.fn(cfg.query)
+				end, { desc = "Textobject move: " .. cfg.query })
 			end
 
 			-- Swap keymaps (normal mode)
@@ -668,32 +654,20 @@ require("lazy").setup({
 				ts_swap.swap_previous("@parameter.inner")
 			end, { desc = "[C]ode [S]wap previous parameter" })
 
+			-- 4. Treesitter Context Setup
 			require("treesitter-context").setup({
-				enable = true, -- Enable this plugin (Can be enabled/disabled later via commands)
-				max_lines = 3, -- How many lines the window should span. Values <= 0 mean no limit.
-				min_window_height = 0, -- Minimum editor window height to enable context. Values <= 0 mean no limit.
+				enable = true,
+				max_lines = 3,
+				min_window_height = 0,
 				line_numbers = true,
-				multiline_threshold = 20, -- Maximum number of lines to show for a single context
-				trim_scope = "outer", -- Which context lines to discard if `max_lines` is exceeded. Choices: 'inner', 'outer'
-				mode = "cursor", -- Line used to calculate context. Choices: 'cursor', 'topline'
-				-- Separator between context and content. Should be a single character string, like '-'.
-				-- When separator is set, the context will only show up when there are at least 2 lines above cursor
+				multiline_threshold = 20,
+				trim_scope = "outer",
+				mode = "cursor",
 				separator = nil,
-				zindex = 20, -- The Z-index of the context window
-				on_attach = nil, -- (fun(buf: integer): boolean) return false to disable attaching
+				zindex = 20,
 			})
 		end,
 	},
-	{ import = "custom.plugins" },
-})
-
-vim.api.nvim_create_autocmd({ "VimEnter", "BufEnter", "FileType" }, {
-	desc = "Disable TreeSitter highlighting for specific filetypes",
-	group = vim.api.nvim_create_augroup("treesitter-highlight-disable", { clear = true }),
-	pattern = { "tex" },
-	callback = function()
-		vim.cmd("TSBufDisable highlight")
-	end,
 })
 
 -- Markpad preview toggle (markdown files only)
