@@ -592,19 +592,15 @@ require("lazy").setup({
 		config = function()
 			-- [[ Configure Treesitter ]] See `:help nvim-treesitter`
 
-			---@diagnostic disable-next-line: missing-fields
+			--@diagnostic disable-next-line: missing-fields
 			require("nvim-treesitter.configs").setup({
 				ensure_installed = {
-					"bash",
 					"c",
-					"html",
 					"lua",
+			       "vim", 
+			       "vimdoc",
 					"markdown",
-					"vim",
-					"vimdoc",
-					"python",
-					"rust",
-					"haskell",
+					"python"
 				},
 				-- Autoinstall languages that are not installed
 				auto_install = true,
