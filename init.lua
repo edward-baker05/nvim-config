@@ -120,7 +120,8 @@ if not vim.loop.fs_stat(lazypath) then
 end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
-require("lazy").setup({
+-- Build the plugin spec by combining inline plugins with custom plugins
+local plugins = {
 	"tpope/vim-sleuth",
 
 	-- "gc" to comment visual regions/lines
@@ -452,13 +453,42 @@ require("lazy").setup({
 	},
 
 	{
-		--'shaunsingh/nord.nvim',
-		--name = 'nord',
-		--lazy = false,
-		--priority = 1000,
-		--config = function()
-		--vim.cmd.colorscheme 'nord'
-		--end,
+		"ThePrimeagen/harpoon",
+		branch = "harpoon2",
+		dependencies = { "nvim-lua/plenary.nvim" },
+		config = function()
+			local harpoon = require("harpoon")
+			harpoon:setup()
+
+			-- Split/vsplit/tab keybindings in harpoon menu
+			harpoon:extend({
+				UI_CREATE = function(cx)
+					vim.keymap.set("n", "<C-v>", function()
+						harpoon.ui:select_menu_item({ vsplit = true })
+					end, { buffer = cx.bufnr })
+					vim.keymap.set("n", "<C-x>", function()
+						harpoon.ui:select_menu_item({ split = true })
+					end, { buffer = cx.bufnr })
+					vim.keymap.set("n", "<C-t>", function()
+						harpoon.ui:select_menu_item({ tabedit = true })
+					end, { buffer = cx.bufnr })
+				end,
+			})
+
+			vim.keymap.set("n", "<leader>a", function()
+				harpoon:list():add()
+			end, { desc = "Add file to harpoon" })
+
+			vim.keymap.set("n", "<leader>A", function()
+				harpoon.ui:toggle_quick_menu(harpoon:list())
+			end, { desc = "Toggle harpoon menu" })
+
+			for i = 1, 9 do
+				vim.keymap.set("n", "<leader>" .. i, function()
+					harpoon:list():select(i)
+				end, { desc = "Go to harpoon file " .. i })
+			end
+		end,
 	},
 
 	{
@@ -668,7 +698,28 @@ require("lazy").setup({
 			})
 		end,
 	},
-})
+}
+
+-- Load custom plugins from lua/custom/plugins/
+local custom_plugins = require("custom.plugins.autocompletion")
+table.insert(plugins, custom_plugins)
+
+for _, plugin_file in ipairs({"harpoon", "autopairs", "tablemode"}) do
+	local custom = require("custom.plugins." .. plugin_file)
+	if custom then
+		if type(custom) == "table" and custom[1] then
+			-- If it's a single plugin spec
+			table.insert(plugins, custom)
+		elseif type(custom) == "table" then
+			-- If it's multiple plugins
+			for _, p in ipairs(custom) do
+				table.insert(plugins, p)
+			end
+		end
+	end
+end
+
+require("lazy").setup(plugins)
 
 -- Markpad preview toggle (markdown files only)
 do

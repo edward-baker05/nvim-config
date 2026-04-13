@@ -23,7 +23,7 @@ return { -- Autocompletion
             config = function()
               require('luasnip.loaders.from_vscode').lazy_load()
               -- Load custom snippets
-              require('luasnip.loaders.from_lua').lazy_load({ paths = "~/.config/nvim/luasnippets" })
+              require('luasnip.loaders.from_lua').lazy_load({ paths = vim.fn.expand("~/.config/nvim/luasnippets") })
             end,
           },
         },

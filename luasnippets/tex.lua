@@ -50,7 +50,7 @@ return {
   ),
 
   -- Today's date
-  s({trig = "today", dscr = "Current date"},
+  s({trig = "today", dscr = "Current date", wordTrig = true},
     f(function() return get_date("%d-%m-%Y") end, {})
   ),
 
