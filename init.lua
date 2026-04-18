@@ -366,16 +366,19 @@ local plugins = {
 		},
 		config = function()
 			require("roslyn").setup({
-				-- Roslyn is installed via Mason, so we don't need to specify a path
-				-- but we do need to ensure the server starts correctly for Unity
 				args = {
+					"--stdio",
 					"--logLevel=Information",
 					"--extensionLogDirectory=" .. vim.fs.dirname(vim.lsp.get_log_path()),
 				},
 				config = {
-					-- Your standard on_attach and capabilities here
 					on_attach = function(client, bufnr)
 						-- keybindings like gd, K, etc.
+					end,
+					choose_target = function(targets)
+						return vim.iter(targets):find(function(t)
+							return t:match("%.sln$") or t:match("%.slnx$")
+						end)
 					end,
 				},
 			})
@@ -704,7 +707,7 @@ local plugins = {
 local custom_plugins = require("custom.plugins.autocompletion")
 table.insert(plugins, custom_plugins)
 
-for _, plugin_file in ipairs({"harpoon", "autopairs", "tablemode"}) do
+for _, plugin_file in ipairs({ "harpoon", "autopairs", "tablemode" }) do
 	local custom = require("custom.plugins." .. plugin_file)
 	if custom then
 		if type(custom) == "table" and custom[1] then
