@@ -55,6 +55,19 @@ vim.opt.smoothscroll = true
 -- Allow cursor to move into empty space in visual block mode
 vim.opt.virtualedit = "block"
 
+vim.g.clipboard = {
+	name = "win32yank",
+	copy = {
+		["+"] = "win32yank.exe -i --crlf",
+		["*"] = "win32yank.exe -i --crlf",
+	},
+	paste = {
+		["+"] = "win32yank.exe -o --lf",
+		["*"] = "win32yank.exe -o --lf",
+	},
+	cache_enabled = 0,
+}
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -435,7 +448,7 @@ require("lazy").setup({
 		"lervag/vimtex",
 		lazy = false,
 		init = function()
-			vim.g.vimtex_view_method = "skim"
+			vim.g.vimtex_view_method = "zathura"
 			vim.g.vimtex_compiler_latexmk = {
 				aux_dir = "aux",
 				options = {
@@ -593,7 +606,7 @@ require("lazy").setup({
 			-- [[ Configure Treesitter ]] See `:help nvim-treesitter`
 
 			---@diagnostic disable-next-line: missing-fields
-			require("nvim-treesitter.configs").setup({
+			require("nvim-treesitter.config").setup({
 				ensure_installed = {
 					"bash",
 					"c",
@@ -696,7 +709,7 @@ vim.api.nvim_create_autocmd({ "VimEnter", "BufEnter", "FileType" }, {
 	group = vim.api.nvim_create_augroup("treesitter-highlight-disable", { clear = true }),
 	pattern = { "tex" },
 	callback = function()
-		vim.cmd("TSBufDisable highlight")
+		vim.treesitter.stop()
 	end,
 })
 
