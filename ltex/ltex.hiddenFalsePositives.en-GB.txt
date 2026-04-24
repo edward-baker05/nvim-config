@@ -1,0 +1,2 @@
+{"rule":"WHITESPACE_RULE","sentence":"^\\Q* * * *\\E$"}
+{"rule":"UPPERCASE_SENTENCE_START","sentence":"^\\Qthatcher\\E$"}

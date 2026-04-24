@@ -167,7 +167,6 @@ local plugins = {
 	{ -- Fuzzy Finder (files, lsp, etc)
 		"nvim-telescope/telescope.nvim",
 		event = "VimEnter",
-		branch = "0.1.x",
 		dependencies = {
 			"nvim-lua/plenary.nvim",
 			{
@@ -337,6 +336,25 @@ local plugins = {
 			-- 5. Setup Servers
 			local capabilities = vim.lsp.protocol.make_client_capabilities()
 
+			vim.lsp.config("ltex_plus", {
+				-- Explicitly tell it to attach to LaTeX files
+				filetypes = { "tex", "bib", "markdown" },
+				on_attach = function(client, bufnr)
+					require("ltex_extra").setup({
+						load_langs = { "en-GB" },
+						path = vim.fn.stdpath("config") .. "/ltex",
+					})
+				end,
+				settings = {
+					ltex = {
+						language = "en-GB",
+						checkFrequency = "save",
+						enabled = { "latex", "tex", "bib" },
+					},
+				},
+			})
+			vim.lsp.enable("ltex_plus")
+
 			require("mason-lspconfig").setup({
 				handlers = {
 					function(server_name)
@@ -356,6 +374,11 @@ local plugins = {
 				},
 			})
 		end,
+	},
+
+	{
+		"barreiroleo/ltex_extra.nvim",
+		ft = { "tex", "bib", "markdown" },
 	},
 
 	{
