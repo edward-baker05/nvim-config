@@ -58,16 +58,25 @@ return {
 		ft = "cs",
 		dependencies = { "williamboman/mason.nvim" },
 		config = function()
-			local capabilities = require("config.lsp").capabilities()
-
 			require("roslyn").setup({
+				args = {
+					"--logLevel=Information",
+					"--extensionLogDirectory=" .. vim.fs.dirname(vim.lsp.log.get_filename()),
+					"--targetFrameworkForImmutabilityCheck=net10.0", -- Match your SDK
+				},
 				config = {
-					capabilities = capabilities,
-					choose_target = function(targets)
-						return vim.iter(targets):find(function(target)
-							return target:match("%.sln$") or target:match("%.slnx$")
-						end)
-					end,
+					settings = {
+						["csharp|background_analysis"] = {
+							dotnet_analyzer_diagnostics_scope = "fullSolution",
+							dotnet_compiler_diagnostics_scope = "fullSolution",
+						},
+					},
+					-- capabilities = capabilities,
+					-- choose_target = function(targets)
+					-- 	return vim.iter(targets):find(function(target)
+					-- 		return target:match("%.sln$") or target:match("%.slnx$")
+					-- 	end)
+					-- end,
 				},
 			})
 		end,

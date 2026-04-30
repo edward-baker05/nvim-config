@@ -20,4 +20,19 @@ vim.api.nvim_create_autocmd({ "FocusGained", "TermClose", "TermLeave" }, {
 	end,
 })
 
+vim.api.nvim_create_autocmd("BufEnter", {
+	desc = "Ensure wrap is disabled for non-writing filetypes",
+	callback = function()
+		local writing_ft = {
+			markdown = true,
+			text = true,
+			tex = true,
+			gitcommit = true,
+		}
+		if not writing_ft[vim.bo.filetype] then
+			vim.opt_local.wrap = false
+		end
+	end,
+})
+
 -- vim: ts=2 sts=2 sw=2 et

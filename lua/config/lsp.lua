@@ -171,6 +171,16 @@ function M.servers(capabilities)
 		ltex_plus = {
 			capabilities = capabilities,
 			filetypes = { "markdown", "tex", "bib" },
+			on_init = function(client)
+				client.server_capabilities.textDocumentSync = {
+					openClose = true,
+					change = vim.lsp.protocol.TextDocumentSyncKind.Full,
+					save = {
+						includeText = true,
+					},
+				}
+				return true
+			end,
 			on_attach = function(client, bufnr)
 				require("ltex_extra").setup({
 					load_langs = { "en-GB" },

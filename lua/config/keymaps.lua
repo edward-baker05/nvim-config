@@ -38,11 +38,6 @@ map("v", "K", ":m '<-2<CR>gv=gv", "Move selection up")
 map("v", "<", "<gv", "Indent left and reselect")
 map("v", ">", ">gv", "Indent right and reselect")
 
-map("n", "<C-h>", "<C-w><C-h>", "Focus left window")
-map("n", "<C-l>", "<C-w><C-l>", "Focus right window")
-map("n", "<C-j>", "<C-w><C-j>", "Focus lower window")
-map("n", "<C-k>", "<C-w><C-k>", "Focus upper window")
-
 map("n", "<leader>tf", "<cmd>FormatToggle<CR>", "[T]oggle auto[F]ormat")
 map("n", ";", "<Esc>:", "Enter command-line mode", { nowait = true })
 

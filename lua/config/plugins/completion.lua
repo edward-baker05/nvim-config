@@ -44,8 +44,8 @@ return {
 				["<C-f>"] = { "scroll_documentation_down", "fallback" },
 				["<Tab>"] = { "snippet_forward", "select_next", "fallback" },
 				["<S-Tab>"] = { "snippet_backward", "select_prev", "fallback" },
-				["<C-l>"] = { "snippet_forward", "fallback" },
-				["<C-h>"] = { "snippet_backward", "fallback" },
+				-- ["<C-l>"] = { "snippet_forward", "fallback" },
+				-- ["<C-h>"] = { "snippet_backward", "fallback" },
 			},
 			appearance = {
 				use_nvim_cmp_as_default = true,
