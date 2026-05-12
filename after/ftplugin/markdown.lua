@@ -6,4 +6,8 @@ vim.keymap.set("n", "<leader>tp", function()
 	require("config.markpad").toggle()
 end, { buffer = 0, desc = "[T]oggle [P]review in Markpad" })
 
+vim.keymap.set("n", "<localleader>ll", function()
+	require("config.markdown").compile_pdf()
+end, { buffer = 0, desc = "Compile Markdown PDF" })
+
 -- vim: ts=2 sts=2 sw=2 et

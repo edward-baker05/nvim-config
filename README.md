@@ -13,6 +13,7 @@ Neovim `0.12` configuration built around `lazy.nvim`, with coding and writing tr
 - `lua/config/lsp.lua`: shared LSP, diagnostics, format, and attach behavior.
 - `lua/config/treesitter.lua`: Treesitter parser and textobject policy.
 - `lua/config/markpad.lua`: optional macOS Markpad integration.
+- `lua/config/markdown.lua`: Markdown PDF compilation helpers.
 - `lua/config/plugins/*.lua`: plugin specs grouped by concern.
 - `ftplugin/*.lua`: filetype-local writing behavior.
 - `luasnippets/tex.lua`: local LaTeX snippets.
@@ -34,6 +35,7 @@ Neovim `0.12` configuration built around `lazy.nvim`, with coding and writing tr
 - `:FormatToggle` toggles LSP format-on-save globally.
 - `<leader>tf` toggles autoformat.
 - Markdown, text, git commit, and TeX buffers enable wrap, linebreak, and spell locally.
+- Markdown buffers compile the current file to a sibling PDF with `<localleader>ll` via Pandoc.
 - Markdown buffers can toggle Markpad preview with `<leader>tp` when running on macOS with Markpad installed.
 
 ## Plugin Inventory
