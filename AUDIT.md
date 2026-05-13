@@ -161,11 +161,6 @@ These plugins provide direct value, workflows, or UI improvements to the editor.
 - **Keybinds:** None.
 - **Dependency:** No.
 
-### `seblyng/roslyn.nvim`
-- **Core Functionality:** C# Language Server integration.
-- **Keybinds:** Handled by `lspconfig`.
-- **Dependency:** No.
-
 ### `dstein64/vim-startuptime`
 - **Core Functionality:** Profiler for Neovim startup time.
 - **Keybinds:** Triggered via `:StartupTime`.

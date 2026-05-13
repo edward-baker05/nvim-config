@@ -53,34 +53,6 @@ return {
 		"barreiroleo/ltex_extra.nvim",
 		ft = { "tex", "bib", "markdown" },
 	},
-	{
-		"seblyng/roslyn.nvim",
-		ft = "cs",
-		dependencies = { "williamboman/mason.nvim" },
-		config = function()
-			require("roslyn").setup({
-				args = {
-					"--logLevel=Information",
-					"--extensionLogDirectory=" .. vim.fs.dirname(vim.lsp.log.get_filename()),
-					"--targetFrameworkForImmutabilityCheck=net10.0", -- Match your SDK
-				},
-				config = {
-					settings = {
-						["csharp|background_analysis"] = {
-							dotnet_analyzer_diagnostics_scope = "fullSolution",
-							dotnet_compiler_diagnostics_scope = "fullSolution",
-						},
-					},
-					-- capabilities = capabilities,
-					-- choose_target = function(targets)
-					-- 	return vim.iter(targets):find(function(target)
-					-- 		return target:match("%.sln$") or target:match("%.slnx$")
-					-- 	end)
-					-- end,
-				},
-			})
-		end,
-	},
 }
 
 -- vim: ts=2 sts=2 sw=2 et
