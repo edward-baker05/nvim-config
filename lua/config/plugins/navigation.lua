@@ -99,7 +99,7 @@ return {
 			"nvim-lua/plenary.nvim",
 			"MunifTanjim/nui.nvim",
 			"nvim-tree/nvim-web-devicons",
-			"antosha417/nvim-lsp-file-operations",
+			"nvim-lsp-file-operations",
 		},
 		opts = {
 			log_to_file = false,
@@ -140,11 +140,15 @@ return {
 		},
 	},
 	{
-		"antosha417/nvim-lsp-file-operations",
+		dir = vim.fn.stdpath("config") .. "/local_plugins/nvim-lsp-file-operations",
+		name = "nvim-lsp-file-operations",
 		dependencies = {
 			"nvim-lua/plenary.nvim",
+			"nvim-neo-tree/neo-tree.nvim",
 		},
-		opts = {},
+		config = function()
+			require("lsp-file-operations").setup()
+		end,
 	},
 	{
 		"ThePrimeagen/harpoon",
