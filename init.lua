@@ -68,6 +68,14 @@ vim.g.clipboard = {
 	cache_enabled = 0,
 }
 
+vim.diagnostic.config({
+	underline = true,
+	undercurL = true,
+	virtual_text = true, -- Shows the error text at the end of the line
+	signs = true, -- Shows the icons in the gutter
+	update_in_insert = false,
+})
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -101,13 +109,6 @@ vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move selection up" })
 vim.keymap.set("v", "<", "<gv")
 vim.keymap.set("v", ">", ">gv")
 
--- Seamless split navigation
-vim.keymap.set("n", "<C-h>", "<C-w><C-h>", { desc = "Move focus to the left window" })
-vim.keymap.set("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus to the right window" })
-vim.keymap.set("n", "<C-j>", "<C-w><C-j>", { desc = "Move focus to the lower window" })
-vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper window" })
-
-vim.keymap.set("n", "<C-e>", "<cmd>Ex<CR>")
 vim.keymap.set("n", ";", "<ESC>:")
 
 -- [[ Basic Autocommands ]]
@@ -174,6 +175,25 @@ require("lazy").setup({
 				{ "<leader>h", group = "Git [H]unk", mode = { "n", "v" } },
 			})
 		end,
+	},
+
+	{
+		"christoomey/vim-tmux-navigator",
+		cmd = {
+			"TmuxNavigateLeft",
+			"TmuxNavigateDown",
+			"TmuxNavigateUp",
+			"TmuxNavigateRight",
+			"TmuxNavigatePrevious",
+			"TmuxNavigatorProcessList",
+		},
+		keys = {
+			{ "<C-h>", "<cmd><C-U>TmuxNavigateLeft<cr>" },
+			{ "<C-j>", "<cmd><C-U>TmuxNavigateDown<cr>" },
+			{ "<C-k>", "<cmd><C-U>TmuxNavigateUp<cr>" },
+			{ "<C-l>", "<cmd><C-U>TmuxNavigateRight<cr>" },
+			{ "<C-\\>", "<cmd><C-U>TmuxNavigatePrevious<cr>" },
+		},
 	},
 
 	{ -- Fuzzy Finder (files, lsp, etc)
@@ -392,6 +412,9 @@ require("lazy").setup({
 				},
 			})
 		end,
+		opts = {
+			filewatching = "roslyn",
+		},
 	},
 
 	{
@@ -595,6 +618,28 @@ require("lazy").setup({
 		"Vimjas/vim-python-pep8-indent",
 	},
 
+	{
+		"kdheepak/lazygit.nvim",
+		lazy = true,
+		cmd = {
+			"LazyGit",
+			"LazyGitConfig",
+			"LazyGitCurrentFile",
+			"LazyGitFilter",
+			"LazyGitFilterCurrentFile",
+		},
+		dependencies = {
+			"nvim-telescope/telescope.nvim",
+			"nvim-lua/plenary.nvim",
+		},
+		keys = {
+			{ "<leader>lg", "<cmd>LazyGit<cr>", desc = "[L]azy[G]it" },
+		},
+		config = function()
+			require("telescope").load_extension("lazygit")
+		end,
+	},
+
 	{ -- Highlight, edit, and navigate code
 		"nvim-treesitter/nvim-treesitter",
 		build = ":TSUpdate",
@@ -761,6 +806,17 @@ do
 			end, { buffer = true, desc = "[T]oggle [P]review in Markpad" })
 		end,
 	})
+end
+
+vim.api.nvim_create_autocmd("BufEnter", {
+	pattern = "*",
+	callback = function()
+		require("lazygit.utils").project_root_dir()
+	end,
+})
+
+if vim.fn.executable("nvr") == 1 then
+	vim.env.GIT_EDITOR = "nvr -cc vsplit --remote-wait +'set bufhidden=wipe'"
 end
 
 -- The line beneath this is called `modeline`. See `:help modeline`
