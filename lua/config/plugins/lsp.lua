@@ -5,6 +5,10 @@ return {
 		cmd = { "ConformInfo" },
 		opts = {
 			notify_on_error = true,
+			format_on_save = {
+				lsp_fallback = true,
+				timeout_ms = 3000, -- Gives black and isort 3 seconds to finish
+			},
 			formatters_by_ft = {
 				lua = { "stylua" },
 				python = { "isort", "black" },
