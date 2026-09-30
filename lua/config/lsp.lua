@@ -165,8 +165,27 @@ function M.servers(capabilities)
 				},
 			},
 		},
+		tinymist = {
+			capabilities = capabilities,
+			settings = {
+				formatterMode = "typstyle",
+			},
+		},
 		pyright = {
 			capabilities = capabilities,
+		},
+		ocamllsp = {
+			capabilities = capabilities,
+		},
+		clangd = {
+			capabilities = capabilities,
+			cmd = {
+				"clangd",
+				"--background-index",
+				"--clang-tidy",
+				"--header-insertion=iwyu",
+				"--completion-style=detailed",
+			},
 		},
 		ltex_plus = {
 			capabilities = capabilities,

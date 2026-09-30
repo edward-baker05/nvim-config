@@ -1,7 +1,26 @@
 local M = {}
 
 local max_filesize = 200 * 1024
-local languages = { "bash", "c", "lua", "markdown", "python", "query", "vim", "vimdoc" }
+-- Parser names to keep installed (the `main` branch ignores `ensure_installed`
+-- in setup(), so we install these explicitly below).
+local ensure_installed = {
+	"bash",
+	"c",
+	"lua",
+	"markdown",
+	"markdown_inline",
+	"python",
+	"query",
+	"rust",
+	"toml",
+	"typst",
+	"vim",
+	"vimdoc",
+}
+-- Filetypes for which to start treesitter. These are buffer filetypes, which
+-- differ from a couple of parser names (sh<->bash, help<->vimdoc); markdown_inline
+-- is injected by the markdown parser so it needs no filetype entry.
+local filetypes = { "sh", "c", "lua", "markdown", "python", "query", "rust", "toml", "typst", "vim", "help" }
 local textobjects = {
 	af = "@function.outer",
 	["if"] = "@function.inner",
@@ -40,6 +59,11 @@ local function start_treesitter(args)
 	if vim.bo[args.buf].filetype ~= "python" then
 		vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
 	end
+
+	-- Fold options are window-local, so set them here (per window showing a
+	-- treesitter buffer) rather than once at startup.
+	vim.wo.foldmethod = "expr"
+	vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 end
 
 local function setup_textobjects()
@@ -77,13 +101,37 @@ local function setup_textobjects()
 	end, { desc = "[C]ode [S]wap previous parameter" })
 end
 
+local function install_missing()
+	local installed = {}
+	for _, lang in ipairs(require("nvim-treesitter.config").get_installed()) do
+		installed[lang] = true
+	end
+
+	local missing = {}
+	for _, lang in ipairs(ensure_installed) do
+		if not installed[lang] then
+			table.insert(missing, lang)
+		end
+	end
+
+	if #missing > 0 then
+		require("nvim-treesitter").install(missing)
+	end
+end
+
 function M.setup()
-	require("nvim-treesitter").setup({})
+	-- On the `main` branch setup() only takes `install_dir`; parser installation
+	-- and highlighting are handled explicitly.
+	install_missing()
 	setup_textobjects()
+
+	-- Open files with everything unfolded; folds are still available to toggle.
+	vim.o.foldlevelstart = 99
+	vim.o.foldenable = true
 
 	vim.api.nvim_create_autocmd("FileType", {
 		group = vim.api.nvim_create_augroup("config-treesitter", { clear = true }),
-		pattern = languages,
+		pattern = filetypes,
 		callback = start_treesitter,
 	})
 end

@@ -145,3 +145,4 @@ NME
 downscaling
 ResBlock
 denoising
+Chessathon

@@ -20,6 +20,15 @@ return {
 		end,
 	},
 	{
+		"chomosuke/typst-preview.nvim",
+		ft = "typst",
+		version = "1.*",
+		opts = {},
+		keys = {
+			{ "<leader>tp", "<cmd>TypstPreviewToggle<CR>", ft = "typst", desc = "[T]oggle Typst [P]review" },
+		},
+	},
+	{
 		"dhruvasagar/vim-table-mode",
 		ft = { "markdown", "text" },
 	},
